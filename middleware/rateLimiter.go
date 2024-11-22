@@ -13,7 +13,7 @@ type RateLimiter struct {
 	DB   any
 }
 
-func (r RateLimiter) writeHeaders (
+func (r RateLimiter) WriteHeaders (
 	w http.ResponseWriter,
 	used int64,
 	expireTime time.Duration,
