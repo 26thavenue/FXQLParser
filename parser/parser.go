@@ -1,7 +1,10 @@
 package parser
 
 import (
+	_ "encoding/json"
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -14,19 +17,79 @@ type Response struct {
 	CAP   uint64
 }
 
-func (r *Response) ValidateCurrencyPair() error {
+type FXQLData struct {
+    CurrencyPair string
+    Buy          int
+    Sell         int
+    Cap          int
+}
 
-	err := ValidateCurrencyPair(r.CURR1)
-	if err != nil{
-		return fmt.Errorf( "%s",err)
+func Parse(input string) (*FXQLData, error) {
+	lines := strings.Split(strings.TrimSpace(input), "\n")
+	if len(lines) < 4 {
+		return nil, errors.New("invalid input: insufficient lines")
 	}
 
-	err = ValidateCurrencyPair(r.CURR2)
-	if err != nil{
-		return fmt.Errorf( "%s",err)
+	// Validate and extract the currency pair
+	header := strings.TrimSpace(lines[0])
+	if !strings.Contains(header, " ") {
+		return nil, errors.New("invalid input: missing space after currency pair")
+	}
+	parts := strings.SplitN(header, " ", 2)
+
+	currencyPair := parts[0]
+
+    cP := strings.Split(currencyPair, "-")
+
+	if len(cP) != 2 {
+		return nil , fmt.Errorf("Invalid input format")
 	}
 
-	return nil
+	before := cP[0]
+	after := cP[1]
+
+	err := ValidateCurrencyPair(before) 
+
+	if err !=nil{
+		return nil , fmt.Errorf("Error %s", err)
+	}
+
+	err = ValidateCurrencyPair(after) 
+
+	if err !=nil{
+		return nil , fmt.Errorf("Error %s", err)
+	}
+
+	// Extract BUY, SELL, CAP
+	data := FXQLData{
+		CurrencyPair: currencyPair,
+	}
+	for _, line := range lines[1:] {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "BUY") {
+			value, err := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(line, "BUY")))
+			if err != nil {
+				return nil, fmt.Errorf("invalid BUY value: %w", err)
+			}
+			data.Buy = value
+		} else if strings.HasPrefix(line, "SELL") {
+			value, err := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(line, "SELL")))
+			if err != nil {
+				return nil, fmt.Errorf("invalid SELL value: %w", err)
+			}
+			data.Sell = value
+		} else if strings.HasPrefix(line, "CAP") {
+			value, err := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(line, "CAP")))
+			if err != nil {
+				return nil, fmt.Errorf("invalid CAP value: %w", err)
+			}
+			data.Cap = value
+		} else {
+			return nil, fmt.Errorf("unexpected line: %s", line)
+		}
+	}
+
+	return &data, nil
 }
 
 func ValidateCurrencyPair(s string ) error {
