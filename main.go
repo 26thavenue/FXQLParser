@@ -3,6 +3,7 @@ package main
 import (
 	// "context"
 	"fmt"
+
 	// "log/slog"
 	// "os"
 	// "os/signal"
@@ -24,7 +25,7 @@ func main() {
 	// 	logger.Error("failed to start server", slog.Any("error", err))
 	// }
 
-	input := `USD-GBP{
+	input := `USD-GBP {
 			BUY 100
 			SELL 200
 			CAP 93800
@@ -35,5 +36,6 @@ func main() {
 		fmt.Printf("Err %s", err)
 	}
 
+	fmt.Println("")
 	fmt.Printf("Output %v", r)
 }

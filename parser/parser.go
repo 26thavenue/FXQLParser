@@ -1,21 +1,12 @@
 package parser
 
 import (
-	_ "encoding/json"
-	"errors"
 	"fmt"
-	"strconv"
 	"strings"
-	"unicode"
+
+	utils "github.com/26thavenue/FXQLParser/util"
 )
 
-type Response struct {
-	CURR1 string
-	CURR2 string
-	BUY   uint64
-	SELL  uint64
-	CAP   uint64
-}
 
 type FXQLData struct {
     CurrencyPair string
@@ -24,106 +15,99 @@ type FXQLData struct {
     Cap          int
 }
 
-func Parse(input string) (*FXQLData, error) {
-	lines := strings.Split(strings.TrimSpace(input), "\n")
-	if len(lines) < 4 {
-		return nil, errors.New("invalid input: insufficient lines")
-	}
+func Parse(input string) ([]*FXQLData, error) {
 
-	// Validate and extract the currency pair
-	header := strings.TrimSpace(lines[0])
-	if !strings.Contains(header, " ") {
-		return nil, errors.New("invalid input: missing space after currency pair")
-	}
-	parts := strings.SplitN(header, " ", 2)
+	// Split input into FXQL blocks, ensuring separation by a single newline
+	blocks := strings.Split(input, "\n\n")
+	var results []*FXQLData
 
-	currencyPair := parts[0]
+	for i, block := range blocks {
+		block = strings.TrimSpace(block)
 
-    cP := strings.Split(currencyPair, "-")
-
-	if len(cP) != 2 {
-		return nil , fmt.Errorf("Invalid input format")
-	}
-
-	before := cP[0]
-	after := cP[1]
-
-	err := ValidateCurrencyPair(before) 
-
-	if err !=nil{
-		return nil , fmt.Errorf("Error %s", err)
-	}
-
-	err = ValidateCurrencyPair(after) 
-
-	if err !=nil{
-		return nil , fmt.Errorf("Error %s", err)
-	}
-
-	// Extract BUY, SELL, CAP
-	data := FXQLData{
-		CurrencyPair: currencyPair,
-	}
-	for _, line := range lines[1:] {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "BUY") {
-			value, err := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(line, "BUY")))
-			if err != nil {
-				return nil, fmt.Errorf("invalid BUY value: %w", err)
-			}
-			data.Buy = value
-		} else if strings.HasPrefix(line, "SELL") {
-			value, err := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(line, "SELL")))
-			if err != nil {
-				return nil, fmt.Errorf("invalid SELL value: %w", err)
-			}
-			data.Sell = value
-		} else if strings.HasPrefix(line, "CAP") {
-			value, err := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(line, "CAP")))
-			if err != nil {
-				return nil, fmt.Errorf("invalid CAP value: %w", err)
-			}
-			data.Cap = value
-		} else {
-			return nil, fmt.Errorf("unexpected line: %s", line)
+		// Ensure no empty block exists
+		if block == "" {
+			return nil, fmt.Errorf("invalid input: empty FXQL statement at block %d", i+1)
 		}
-	}
 
-	return &data, nil
-}
-
-func ValidateCurrencyPair(s string ) error {
-	err := checkUpperCase(s)
-	if err != nil{
-		return fmt.Errorf( "%s",err)
-	}
-
-	err = hasThreeLetters(s)
-	if err != nil{
-		return fmt.Errorf( "%s",err)
-	}
-
-	return nil
-}
-
-func checkUpperCase(s string) error {
-	for _, r := range s {
-		if unicode.IsLetter(r) && !unicode.IsUpper(r) {
-			return fmt.Errorf("Invalid: %s should be %s", s, strings.ToUpper(s))
+		// Validate each block as an independent FXQL statement
+		lines := strings.Split(block, "\n")
+		if len(lines) < 4 {
+			return nil, fmt.Errorf("invalid input: insufficient lines in block %d", i+1)
 		}
-	}
-	return nil
-}
 
-func hasThreeLetters(s string) error {
-	count := 0
-	for _, r := range s {
-		if unicode.IsLetter(r) {
-			count++
+		// Validate and extract the currency pair
+		header := strings.TrimSpace(lines[0])
+		if !strings.Contains(header, " ") {
+			return nil, fmt.Errorf("invalid input: missing space after currency pair in block %d", i+1)
 		}
+
+		parts := strings.SplitN(header, " ", 2)
+		currencyPair := parts[0]
+
+		cP := strings.Split(currencyPair, "-")
+		if len(cP) != 2 {
+			return nil, fmt.Errorf("invalid input: currency pair format is incorrect in block %d", i+1)
+		}
+
+		before := cP[0]
+		after := cP[1]
+
+		// Validate currency pair parts
+		err := utils.ValidateCurrencyPair(before)
+		if err != nil {
+			return nil, fmt.Errorf("%s before , %s", err, before)
+		}
+
+		err = utils.ValidateCurrencyPair(after)
+		if err != nil {
+			return nil,fmt.Errorf("%s after , %s", err, after)
+		}
+
+		// Initialize FXQLData structure
+		data := &FXQLData{
+			CurrencyPair: currencyPair,
+		}
+
+		
+
+		// Process remaining lines in the block
+		for _, line := range lines[1:] {
+			
+
+			line = strings.Trim(line, "[]")
+			nV := strings.TrimSpace(line)
+			nV = strings.Trim(nV, "}")
+
+			if nV == "" {
+				break
+			}
+
+			if strings.HasPrefix(nV, "BUY") {
+				value, err := utils.CheckIntValue(nV, "BUY")
+				if err != nil {
+					return nil, fmt.Errorf("error in BUY value in block %d: %s", i+1, err)
+				}
+				data.Buy = value
+			} else if strings.HasPrefix(nV, "SELL") {
+				value, err := utils.CheckIntValue(nV, "SELL")
+				if err != nil {
+					return nil, fmt.Errorf("error in SELL value in block %d: %s", i+1, err)
+				}
+				data.Sell = value
+			} else if strings.HasPrefix(nV, "CAP") {
+				value, err := utils.CheckIntValue(nV, "CAP")
+				if err != nil {
+					return nil, fmt.Errorf("error in CAP value in block %d: %s", i+1, err)
+				}
+				data.Cap = value
+			} else  {
+				fmt.Printf("Unexpected line format: '%s'\n", nV)
+				return nil, fmt.Errorf("Empty FXQL statement, %v", data)
+			}
+		}
+
+		results = append(results, data)
 	}
-	if count == 3 {
-		return fmt.Errorf("Currency must be exactly 3 uppercase characters")
-	}
-	return nil
+
+	return results, nil
 }
