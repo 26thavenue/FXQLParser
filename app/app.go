@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	_ "github.com/26thavenue/FXQLParser/docs"
 	middlewares "github.com/26thavenue/FXQLParser/middleware"
 )
 
