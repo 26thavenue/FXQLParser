@@ -9,7 +9,8 @@ import (
 
 
 type FXQLData struct {
-    CurrencyPair string
+	SourceCurrency string
+    DestinationCurrency string
     Buy          int
     Sell         int
     Cap          int
@@ -65,7 +66,8 @@ func Parse(input string) ([]*FXQLData, error) {
 
 		// Initialize FXQLData structure
 		data := &FXQLData{
-			CurrencyPair: currencyPair,
+			SourceCurrency: before,
+			DestinationCurrency:after,
 		}
 
 		

@@ -112,7 +112,40 @@ func TestParser(t *testing.T){
 		assert.NoError(t, err)
 		assert.Equal(t, []*FXQLData{
 			{
-				CurrencyPair: "USD-GBP",
+				SourceCurrency: "USD",
+				DestinationCurrency: "GBP",
+				Buy:          100,
+				Sell:         200,
+				Cap:          93800,
+			},
+		}, value)
+	})
+	
+	t.Run("Valid Double FXQL statement", func(t *testing.T){
+		input := `USD-GBP {
+						BUY 100
+						SELL 200
+		 				CAP 93800
+					}
+					USD-GBP {
+						BUY 100
+						SELL 200
+		 				CAP 93800
+					}`
+
+		value, err := Parse(input)
+		assert.NoError(t, err)
+		assert.Equal(t, []*FXQLData{
+			{
+				SourceCurrency: "USD",
+				DestinationCurrency: "GBP",
+				Buy:          100,
+				Sell:         200,
+				Cap:          93800,
+			},
+			{
+				SourceCurrency: "USD",
+				DestinationCurrency: "GBP",
 				Buy:          100,
 				Sell:         200,
 				Cap:          93800,
