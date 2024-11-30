@@ -31,38 +31,38 @@ func TestCreate(t *testing.T) {
 			},
 			expectError: false,
 		},
-		// {
-		// 	name: "Multiple Currency Pairs",
-		// 	input: `
-		// 		USD-GBP { 
-		// 			BUY 85 
-		// 			SELL 90 
-		// 			CAP 10000 
-		// 		}
-		// 		EUR-JPY { 
-		// 			BUY 130 
-		// 			SELL 135 
-		// 			CAP 5000 
-		// 		}
-		// 	`,
-		// 	expected: []Response{
-		// 		{
-		// 			SourceCurrency:      "USD",
-		// 			DestinationCurrency: "GBP",
-		// 			BuyPrice:            85,
-		// 			SellPrice:           90,
-		// 			CapAmount:           10000,
-		// 		},
-		// 		{
-		// 			SourceCurrency:      "EUR",
-		// 			DestinationCurrency: "JPY",
-		// 			BuyPrice:            130,
-		// 			SellPrice:           135,
-		// 			CapAmount:           5000,
-		// 		},
-		// 	},
-		// 	expectError: false,
-		// },
+		{
+			name: "Multiple Currency Pairs",
+			input: `
+				USD-GBP { 
+					BUY 85 
+					SELL 90 
+					CAP 10000 
+				}
+				EUR-JPY { 
+					BUY 130 
+					SELL 135 
+					CAP 5000 
+				}
+			`,
+			expected: []Response{
+				{
+					SourceCurrency:      "USD",
+					DestinationCurrency: "GBP",
+					BuyPrice:            85,
+					SellPrice:           90,
+					CapAmount:           10000,
+				},
+				{
+					SourceCurrency:      "EUR",
+					DestinationCurrency: "JPY",
+					BuyPrice:            130,
+					SellPrice:           135,
+					CapAmount:           5000,
+				},
+			},
+			expectError: false,
+		},
 		{
 			name: "Duplicate Currency Pair",
 			input: `
@@ -103,7 +103,7 @@ func TestCreate(t *testing.T) {
 			if tt.expectError {
 				assert.Error(t, err)
 			} else {
-				// t.Logf("%v Logs",r )
+				t.Logf("%v Logs",r )
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expected, *r)
 			}

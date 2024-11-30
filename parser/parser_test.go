@@ -110,7 +110,7 @@ func TestParser(t *testing.T){
 
 		value, err := Parse(input)
 		assert.NoError(t, err)
-		assert.Equal(t, []*FXQLData{
+		assert.Equal(t, []FXQLData{
 			{
 				SourceCurrency: "USD",
 				DestinationCurrency: "GBP",
@@ -134,8 +134,10 @@ func TestParser(t *testing.T){
 					}`
 
 		value, err := Parse(input)
+		t.Logf("%+v Value",value)
 		assert.NoError(t, err)
-		assert.Equal(t, []*FXQLData{
+		assert.Equal(t, 
+			[]FXQLData{
 			{
 				SourceCurrency: "USD",
 				DestinationCurrency: "GBP",

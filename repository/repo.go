@@ -2,7 +2,7 @@ package repository
 
 import (
 	"fmt"
-	"log"
+	_ "log"
 
 	"github.com/26thavenue/FXQLParser/parser"
 )
@@ -28,11 +28,15 @@ func Create (input string) (*[]Response, error){
 		return nil, fmt.Errorf("%s", err)
 	}
 
+	if vr == nil {
+		return nil, fmt.Errorf("parser returned nil data")
+	}
+
 	currencyMap := make(map[string]Response)
 
-	for _, item:= range vr {
-		log.Printf(" %v", item)
-	}
+	// for _, item:= range vr {
+	// 	log.Printf(" %v", item)
+	// }
 
 	for _, fx := range vr {
 		key := fx.SourceCurrency + "-" + fx.DestinationCurrency
