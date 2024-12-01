@@ -1,16 +1,19 @@
 package main
 
 import (
-	"context"
-	"log/slog"
-	"os"
-	"os/signal"
+	_ "context"
+	"fmt"
+	_ "log/slog"
+	_ "os"
+	_ "os/signal"
 
-	"github.com/26thavenue/FXQLParser/app"
+	_ "github.com/26thavenue/FXQLParser/app"
 
 	"github.com/joho/godotenv"
 
 	_ "github.com/26thavenue/FXQLParser/docs"
+
+	"github.com/26thavenue/FXQLParser/parser"
 )
 
 // @title FXQL Parser API
@@ -29,14 +32,41 @@ import (
 func main() {
 	godotenv.Load()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
+	// logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	// ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	// defer cancel()
 
-	a:= app.New(logger)
+	// a:= app.New(logger)
 
-	if err := a.Start(ctx); err != nil {
-		logger.Error("failed to start server", slog.Any("error", err))
-	}
+	// if err := a.Start(ctx); err != nil {
+	// 	logger.Error("failed to start server", slog.Any("error", err))
+	// }
+
+	// input := []string{
+	// 	`USD-GBP {
+	// 					BUY 100
+
+	// 					SELL 200
+
+	// 					CAP 93800
+	// 					}`,
+	// }
+
+	in := `USD-GBP {
+						BUY 100
+						SELL 200
+						CAP 93800
+						}`
+
+	vr,dd := parser.Dummy(in)
+
+	// vr, err := parser.ProcessBlock(input)
+
+	// if err != nil{
+	// 	fmt.Printf(" Error %s", err)
+	// }
+
+	fmt.Println("%i",vr)
+	fmt.Println("%i", dd)
 
 }

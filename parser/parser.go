@@ -18,6 +18,17 @@ type FXQLData struct {
     Cap          int
 }
 
+func Dummy(input string) ([]string, string){
+	blocks := strings.Split(input, "\n")
+
+	newlineCount := strings.Count(input, "\n")
+	fmt.Printf("Number of new lines: %d\n", newlineCount)
+	fmt.Printf("Number of blocks: %d\n", len(blocks))
+	
+
+	return blocks ,input
+}
+
 func Parse(input string) ([]FXQLData, error) {
 	// Split the input by single newline and process each block
 	blocks := strings.Split(input, "\n")
@@ -27,6 +38,8 @@ func Parse(input string) ([]FXQLData, error) {
 
 	for _, line := range blocks {
 		line = strings.TrimSpace(line)
+
+		
 		if line == "" {
 			continue
 		}
@@ -37,7 +50,7 @@ func Parse(input string) ([]FXQLData, error) {
 		
 		currentBlock = append(currentBlock, line)
 		if strings.HasSuffix(line, "}") {
-			data, err := processBlock(currentBlock)
+			data, err := ProcessBlock(currentBlock)
 			if err != nil {
 				return nil, err
 			}
@@ -49,15 +62,21 @@ func Parse(input string) ([]FXQLData, error) {
 	return results, nil
 }
 
-func processBlock(lines []string) (FXQLData, error) {
+func ProcessBlock(lines []string) (FXQLData, error) {
+
+	fmt.Println(len(lines))
 	if len(lines) < 2 {
-		return FXQLData{}, fmt.Errorf("insufficient lines in block")
+		return FXQLData{}, fmt.Errorf("Invalid: Empty FXQL statement, %d", len(lines))
 	}
+
+	fmt.Printf("%v",lines)
 
 	header := strings.TrimSpace(lines[0])
 	if !strings.Contains(header, " ") {
 		return FXQLData{}, fmt.Errorf("missing space after currency pair")
 	}
+
+	fmt.Printf("%v",header)
 
 	parts := strings.SplitN(header, " ", 2)
 	currencyPair := parts[0]
@@ -87,15 +106,18 @@ func processBlock(lines []string) (FXQLData, error) {
 			return FXQLData{}, fmt.Errorf("Invalid: Multiple newlines within a single FXQL statement")
 		}
 
+		fmt.Printf("%v",line)
+
 		line = strings.TrimSpace(line)
 
-		if strings.HasPrefix(line, "BUY") {
-				value, err := utils.CheckIntValue(line, "BUY")
-				if err != nil {
-					return FXQLData{}, fmt.Errorf("error in BUY value in block %d: %s", i+1, err)
-				}
-				data.Buy = value
-		} else if strings.HasPrefix(line, "SELL") {
+		fmt.Printf("%v",line)
+
+		if line == "" {
+			log.Printf("%v",line)
+			return FXQLData{}, fmt.Errorf("Invalid: Empty FXQL statement")
+				
+		} 
+		if strings.HasPrefix(line, "SELL") {
 				value, err := utils.CheckIntValue(line, "SELL")
 				if err != nil {
 					return FXQLData{}, fmt.Errorf("error in SELL value in block %d: %s", i+1, err)
@@ -107,9 +129,12 @@ func processBlock(lines []string) (FXQLData, error) {
 					return FXQLData{}, fmt.Errorf("error in CAP value in block %d: %s", i+1, err)
 				}
 				data.Cap = value
-		}else{
-			    log.Printf("%v",line)
-				return FXQLData{}, fmt.Errorf("Invalid: Empty FXQL statement")
+		}else if strings.HasPrefix(line, "BUY"){
+			    value, err := utils.CheckIntValue(line, "BUY")
+				if err != nil {
+					return FXQLData{}, fmt.Errorf("error in BUY value in block %d: %s", i+1, err)
+				}
+				data.Buy = value
 		}
 		
 	}
