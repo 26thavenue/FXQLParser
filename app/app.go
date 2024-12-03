@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -14,15 +15,16 @@ import (
 type App struct {
 	logger *slog.Logger
 	router *http.ServeMux
-	db  any
+	db  *sql.DB
 }
 
-func New(logger *slog.Logger) *App{
+func New(logger *slog.Logger, db *sql.DB) *App{
 	router := http.NewServeMux()
 
 	app := &App{
 		logger: logger,
 		router: router,
+		db:db,
 	}
 
 	return app

@@ -8,6 +8,7 @@ import (
 	"os/signal"
 
 	"github.com/26thavenue/FXQLParser/app"
+	"github.com/26thavenue/FXQLParser/database"
 	_ "github.com/26thavenue/FXQLParser/docs"
 
 	"github.com/joho/godotenv"
@@ -33,7 +34,9 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	a:= app.New(logger)
+	database.Connect()
+
+	a:= app.New(logger,database.DBInstance.Instance)
 
 	if err := a.Start(ctx); err != nil {
 		logger.Error("failed to start server", slog.Any("error", err))
