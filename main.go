@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	_ "fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 
 	"github.com/26thavenue/FXQLParser/app"
 	_ "github.com/26thavenue/FXQLParser/docs"
+
 	"github.com/joho/godotenv"
 )
 
@@ -36,6 +38,5 @@ func main() {
 	if err := a.Start(ctx); err != nil {
 		logger.Error("failed to start server", slog.Any("error", err))
 	}
-
 
 }

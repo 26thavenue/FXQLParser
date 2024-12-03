@@ -33,8 +33,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			name: "Multiple Currency Pairs",
-			input: `
-				USD-GBP { 
+			input: `USD-GBP { 
 					BUY 85 
 					SELL 90 
 					CAP 10000 
@@ -43,8 +42,7 @@ func TestCreate(t *testing.T) {
 					BUY 130 
 					SELL 135 
 					CAP 5000 
-				}
-			`,
+				}`,
 			expected: []Response{
 				{
 					SourceCurrency:      "USD",
@@ -65,8 +63,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			name: "Duplicate Currency Pair",
-			input: `
-				USD-GBP { 
+			input: `USD-GBP { 
 					BUY 85 
 					SELL 90 
 					CAP 10000 
@@ -75,8 +72,7 @@ func TestCreate(t *testing.T) {
 					BUY 86 
 					SELL 91 
 					CAP 12000 
-				}
-			`,
+				}`,
 			expected: []Response{
 				{
 					SourceCurrency:      "USD",

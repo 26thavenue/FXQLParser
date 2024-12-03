@@ -17,7 +17,6 @@ type Response struct {
 }
 
 func Create (input string) (*[]Response, error){
-
 	if input == "" {
 		return nil, fmt.Errorf("input cannot be empty")
 	}
@@ -32,28 +31,23 @@ func Create (input string) (*[]Response, error){
 		return nil, fmt.Errorf("parser returned nil data")
 	}
 
-	currencyMap := make(map[string]Response)
+	// MAP OVER THE VALUES OF VR ,APPEND IT TO A MAP AND PASS IT TO THE RESPONSE 
+	pairs := make(map[string]parser.FXQLData)
 
-	// for _, item:= range vr {
-	// 	log.Printf(" %v", item)
-	// }
-
-	for _, fx := range vr {
-		key := fx.SourceCurrency + "-" + fx.DestinationCurrency
-
-		currencyMap[key] = Response{
-			SourceCurrency:      fx.SourceCurrency,
-			DestinationCurrency: fx.DestinationCurrency,
-			BuyPrice:            fx.Buy,
-			SellPrice:           fx.Sell,
-			CapAmount:           fx.Cap,
-		}
-		// log.Printf("%v - Inside",currencyMap)
+	for _, data := range vr {
+		key := fmt.Sprintf("%s-%s", data.SourceCurrency, data.DestinationCurrency)
+		pairs[key] = data 
 	}
 
 	var responses []Response
-	for _, value := range currencyMap {
-		responses = append(responses, value)
+	for _, data := range pairs {
+		responses = append(responses, Response{
+			SourceCurrency:    data.SourceCurrency,
+			DestinationCurrency: data.DestinationCurrency,
+			SellPrice:         data.Sell,
+			BuyPrice:          data.Buy,
+			CapAmount:         data.Cap,
+		})
 	}
 
 	return &responses, nil

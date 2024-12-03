@@ -49,8 +49,6 @@ func ProcessStrings(input string) error{
 }
 
 func Parse(input string) ([]FXQLData, error) {
-	// Split the input by single newline and process each block
-
     err := ProcessStrings(input)
 	if err != nil {
 		return nil, err
@@ -80,25 +78,18 @@ func Parse(input string) ([]FXQLData, error) {
 			currentBlock = []string{} 
 		}
 	}
-
 	return results, nil
 }
 
 func ProcessBlock(lines []string) (FXQLData, error) {
-
-	fmt.Println(len(lines))
 	if len(lines) < 2 {
 		return FXQLData{}, fmt.Errorf("Invalid: Empty FXQL statement, %d", len(lines))
 	}
-
-	fmt.Printf("%v",lines)
 
 	header := strings.TrimSpace(lines[0])
 	if !strings.Contains(header, " ") {
 		return FXQLData{}, fmt.Errorf("missing space after currency pair")
 	}
-
-	fmt.Printf("%v",header)
 
 	parts := strings.SplitN(header, " ", 2)
 	currencyPair := parts[0]
@@ -121,19 +112,11 @@ func ProcessBlock(lines []string) (FXQLData, error) {
 		DestinationCurrency: after,
 	}
 
-	
 	for i, line := range lines[1:] {
-
 		if strings.Contains(line, "\n\n") {
 			return FXQLData{}, fmt.Errorf("Invalid: Multiple newlines within a single FXQL statement")
 		}
-
-		fmt.Printf("%v",line)
-
 		line = strings.TrimSpace(line)
-
-		fmt.Printf("%v",line)
-
 		if line == "" {
 			log.Printf("%v",line)
 			return FXQLData{}, fmt.Errorf("Invalid: Empty FXQL statement")
@@ -163,40 +146,3 @@ func ProcessBlock(lines []string) (FXQLData, error) {
 
 	return data, nil
 }
-
-
-
-// Validate remaining lines
-		// hasValidContent := false
-		// for _, line := range lines[1:] {
-		// 	nV := strings.TrimSpace(strings.Trim(line, "{}"))
-		// 	if nV == "" {
-		// 		continue
-		// 	}
-
-		// 	hasValidContent = true
-
-		// 	if strings.HasPrefix(nV, "BUY") {
-		// 		value, err := utils.CheckIntValue(nV, "BUY")
-		// 		if err != nil {
-		// 			return nil, fmt.Errorf("error in BUY value in block %d: %s", i+1, err)
-		// 		}
-		// 		data.Buy = value
-		// 	} else if strings.HasPrefix(nV, "SELL") {
-		// 		value, err := utils.CheckIntValue(nV, "SELL")
-		// 		if err != nil {
-		// 			return nil, fmt.Errorf("error in SELL value in block %d: %s", i+1, err)
-		// 		}
-		// 		data.Sell = value
-		// 	} else if strings.HasPrefix(nV, "CAP") {
-		// 		value, err := utils.CheckIntValue(nV, "CAP")
-		// 		if err != nil {
-		// 			return nil, fmt.Errorf("error in CAP value in block %d: %s", i+1, err)
-		// 		}
-		// 		data.Cap = value
-		// 	}
-		// }
-
-		// if !hasValidContent {
-		// 	return nil, fmt.Errorf("Invalid: Empty FXQL statement in block %d", i+1)
-		// }
