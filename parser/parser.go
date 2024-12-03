@@ -9,6 +9,13 @@ import (
 	utils "github.com/26thavenue/FXQLParser/util"
 )
 
+const (
+	ErrInsufficientLines      = "Insufficient amount of lines"
+	ErrTooManyLines           = "Too many lines"
+	ErrMultipleStatements     = "Invalid: Multiple FXQL statements should be separated by a single newline character"
+	ErrMultipleNewlinesWithin = "Invalid: Multiple newlines within a single FXQL statement"
+)
+
 
 type FXQLData struct {
 	SourceCurrency string
@@ -18,19 +25,36 @@ type FXQLData struct {
     Cap          int
 }
 
-func Dummy(input string) ([]string, string){
-	blocks := strings.Split(input, "\n")
-
-	newlineCount := strings.Count(input, "\n")
-	fmt.Printf("Number of new lines: %d\n", newlineCount)
-	fmt.Printf("Number of blocks: %d\n", len(blocks))
-	
-
-	return blocks ,input
+func ProcessStrings(input string) error{
+	blocks := strings.Split(input, "}")
+	lines := strings.Count(input, "\n")
+	if lines < 4 || len(blocks) < 2 {
+		return fmt.Errorf(ErrInsufficientLines)
+	}
+	if len(blocks) > 2 {
+		if len(blocks) > 3 {
+			return fmt.Errorf(ErrTooManyLines)
+		} else if len(blocks) == 3{
+			if lines < 9 {
+				return fmt.Errorf(ErrMultipleStatements)
+			} else if lines > 9 {
+				return fmt.Errorf(ErrTooManyLines)
+			}
+		}
+	}
+	if len(blocks) == 2 && lines != 4 {
+		return fmt.Errorf(ErrMultipleNewlinesWithin)
+	}
+	return nil
 }
 
 func Parse(input string) ([]FXQLData, error) {
 	// Split the input by single newline and process each block
+
+    err := ProcessStrings(input)
+	if err != nil {
+		return nil, err
+	}
 	blocks := strings.Split(input, "\n")
 
 	var results []FXQLData
@@ -38,8 +62,6 @@ func Parse(input string) ([]FXQLData, error) {
 
 	for _, line := range blocks {
 		line = strings.TrimSpace(line)
-
-		
 		if line == "" {
 			continue
 		}
