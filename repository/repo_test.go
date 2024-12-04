@@ -3,10 +3,11 @@ package repository
 import (
 	"testing"
 
+	"github.com/26thavenue/FXQLParser/database"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreate(t *testing.T) {
+func TestTransform(t *testing.T) {
 	tests := []struct {
 		input       string
 		name        string
@@ -95,7 +96,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := Create(tt.input)
+			r, err := Transform(tt.input)
 			if tt.expectError {
 				assert.Error(t, err)
 			} else {
@@ -106,3 +107,24 @@ func TestCreate(t *testing.T) {
 		})
 	}
 }
+
+func init() {
+	database.DBInstance = &database.DB{
+		Instance: nil,
+	}
+}
+
+// func TestCreate(t *testing.T) {
+	
+// 	input := `USD-GBP {
+// 						BUY 100
+// 						SELL 200
+// 		 				CAP 93800
+// 			}`
+// 	err := Create(input)
+	
+// 	assert.Nil(t, err, "Expected no error from Create function")
+	
+// 	exists := CheckCurrencyPair("USD", "EUR")
+// 	assert.True(t, exists, "Currency pair USD/EUR should exist in the database")
+// }

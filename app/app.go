@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -10,15 +9,16 @@ import (
 
 	_ "github.com/26thavenue/FXQLParser/docs"
 	middlewares "github.com/26thavenue/FXQLParser/middleware"
+	"gorm.io/gorm"
 )
 
 type App struct {
 	logger *slog.Logger
 	router *http.ServeMux
-	db  *sql.DB
+	db  *gorm.DB
 }
 
-func New(logger *slog.Logger, db *sql.DB) *App{
+func New(logger *slog.Logger, db *gorm.DB) *App{
 	router := http.NewServeMux()
 
 	app := &App{

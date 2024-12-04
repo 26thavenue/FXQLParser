@@ -1,16 +1,26 @@
 package database
 
 import (
-	"database/sql"
 	_ "fmt"
 	"log"
 
 	"github.com/26thavenue/FXQLParser/config"
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type DB struct {
-	Instance *sql.DB
+	Instance *gorm.DB
+}
+
+type Transaction struct {
+    gorm.Model
+    SourceCurrency     string
+    DestinationCurrency string
+    SellPrice          int
+    BuyPrice           int
+    CapAmount          int
 }
 
 var DBInstance *DB
@@ -21,12 +31,12 @@ func Connect() {
 		log.Fatalf("Failed to load database configuration: %v", err)
 	}
 
-	db, err := sql.Open("postgres", dbConfig.URL())
+	db, err := gorm.Open(postgres.Open(dbConfig.URL()),&gorm.Config{} )
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	err = db.Ping()
+	db.AutoMigrate(&Transaction{})
 	if err != nil {
 		log.Fatalf("Database connection is not alive: %v", err)
 	}

@@ -2,8 +2,10 @@ package repository
 
 import (
 	"fmt"
+	"log"
 	_ "log"
 
+	"github.com/26thavenue/FXQLParser/database"
 	"github.com/26thavenue/FXQLParser/parser"
 )
 
@@ -16,11 +18,10 @@ type Response struct {
 	CapAmount int
 }
 
-func Create (input string) (*[]Response, error){
+func Transform (input string) (*[]Response, error){
 	if input == "" {
 		return nil, fmt.Errorf("input cannot be empty")
 	}
-
 	vr,err := parser.Parse(input)
 
 	if err != nil{
@@ -54,11 +55,46 @@ func Create (input string) (*[]Response, error){
 
 }
 
-func CheckCurrencyPair(des, source string) bool{
-	return false
+func Create(input string) error {
+	responses, err := Transform(input)
+	if err != nil {
+		return fmt.Errorf("failed to transform input: %v", err)
+	}
+
+	for _, response := range *responses {
+		transaction := &database.Transaction{
+			SourceCurrency:     response.SourceCurrency,
+			DestinationCurrency: response.DestinationCurrency,
+			SellPrice:          response.SellPrice,
+			BuyPrice:           response.BuyPrice,
+			CapAmount:          response.CapAmount,
+		}
+
+		err := database.DBInstance.Instance.Create(transaction).Error
+		if err != nil {
+			log.Printf("Error inserting transaction: %v", err)
+			return fmt.Errorf("failed to insert data: %v", err)
+		}
+	}
+
+	return nil
 }
 
-func Update(input string) (*Response, error){
+func CheckCurrencyPair(source, destination string) bool {
+	var count int64
+	err := database.DBInstance.Instance.Model(&database.Transaction{}).
+		Where("source_currency = ? AND destination_currency = ?", source, destination).
+		Count(&count).Error
 
-	return nil, nil
+	if err != nil {
+		log.Printf("Error checking currency pair: %v", err)
+		return false
+	}
+
+	return count > 0
 }
+
+// func Update(input string) (*Response, error){
+
+// 	return nil, nil
+// }
