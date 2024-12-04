@@ -7,9 +7,10 @@ import (
 	"github.com/26thavenue/FXQLParser/repository"
 )
 
-type RequestBody struct {
+type CreateRequestBody struct {
 	Input string `json:"input"`
 }
+
 
 func CreateTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -17,7 +18,7 @@ func CreateTransactionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var requestBody RequestBody
+	var requestBody CreateRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -32,3 +33,30 @@ func CreateTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Transactions created successfully"))
 }
+
+func CheckCurrencyPairHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	sourceCurrency := r.URL.Query().Get("source")
+	destinationCurrency := r.URL.Query().Get("destination")
+
+	if sourceCurrency == "" || destinationCurrency == "" {
+		http.Error(w, "Missing source or destination query parameter", http.StatusBadRequest)
+		return
+	}
+
+	exists := repository.CheckCurrencyPair(sourceCurrency, destinationCurrency)
+
+	if exists {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Currency pair exists"))
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Currency pair does not exist"))
+	}
+}
+
+
