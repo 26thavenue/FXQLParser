@@ -144,5 +144,4 @@ Note: The EntryId values in the response are arbitrary and will be determined by
 - API design and implementation
 
 
-Link to Assesment -[https://miraapp.notion.site/Backend-Developer-Technical-Assessment-a954df277ad34772a261ddfe2dd7210c]
 
